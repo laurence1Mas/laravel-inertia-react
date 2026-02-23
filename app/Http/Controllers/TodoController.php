@@ -10,27 +10,48 @@ class TodoController extends Controller
 {
     public function index()
     {
+        $todos = Todo::where('user_id', auth()->id())
+                     ->orderBy('created_at', 'desc')
+                     ->get();
+
         return Inertia::render('Todos/Index', [
-            'todos' => Todo::latest()->get()
+            'todos' => $todos,
         ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required'
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
-        Todo::create([
-            'title' => $request->title
+        $todo = auth()->user()->todos()->create($validated);
+
+        return redirect()->back()->with('success', 'Todo créé avec succès.');
+    }
+
+    public function update(Request $request, Todo $todo)
+    {
+        $this->authorize('update', $todo);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'completed' => 'sometimes|boolean',
         ]);
 
-        return redirect()->back();
+        $todo->update($validated);
+
+        return redirect()->back()->with('success', 'Todo mis à jour.');
     }
 
     public function destroy(Todo $todo)
     {
+        $this->authorize('delete', $todo);
+
         $todo->delete();
-        return redirect()->back();
+
+        return redirect()->back()->with('success', 'Todo supprimé.');
     }
 }
