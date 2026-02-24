@@ -15,7 +15,11 @@ class TodoController extends Controller
                      ->get();
 
         return Inertia::render('Todos/Index', [
-            'todos' => $todos,
+        'todos' => $todos,
+        'flash' => [
+            'success' => session('success'),
+            'error' => session('error'),
+        ]
         ]);
     }
 
