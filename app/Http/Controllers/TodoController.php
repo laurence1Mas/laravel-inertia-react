@@ -2,60 +2,100 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Todo;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreTodoRequest;
+use App\Http\Requests\UpdateTodoRequest;
+use App\Services\TodoService;
 use Inertia\Inertia;
+use App\Models\Todo;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TodoController extends Controller
 {
+    protected TodoService $todoService;
+
+    public function __construct(TodoService $todoService)
+    {
+        $this->todoService = $todoService;
+    }
+
     public function index()
     {
-        $todos = Todo::where('user_id', auth()->id())
-                     ->orderBy('created_at', 'desc')
-                     ->get();
+        $todos = $this->todoService->getUserTodos(auth()->id());
+        $counts = $this->todoService->countTodosByStatus(auth()->id());
 
         return Inertia::render('Todos/Index', [
-        'todos' => $todos,
-        'flash' => [
-            'success' => session('success'),
-            'error' => session('error'),
-        ]
+            'todos' => $todos,
+            'counts' => $counts,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ]
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreTodoRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $todo = $this->todoService->createTodo(
+                auth()->id(),
+                $request->validated()
+            );
 
-        $todo = auth()->user()->todos()->create($validated);
-
-        return redirect()->back()->with('success', 'Todo créé avec succès.');
+            return redirect()->back()->with('success', 'Todo créé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la création du todo.')
+                ->withInput();
+        }
     }
 
-    public function update(Request $request, Todo $todo)
+    public function update(UpdateTodoRequest $request, Todo $todo)
     {
-        $this->authorize('update', $todo);
+        try {
+            $this->todoService->updateTodo(
+                $todo->id,
+                auth()->id(),
+                $request->validated()
+            );
 
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'completed' => 'sometimes|boolean',
-        ]);
-
-        $todo->update($validated);
-
-        return redirect()->back()->with('success', 'Todo mis à jour.');
+            return redirect()->back()->with('success', 'Todo mis à jour avec succès.');
+        } catch (NotFoundHttpException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la mise à jour du todo.');
+        }
     }
 
     public function destroy(Todo $todo)
     {
-        $this->authorize('delete', $todo);
+        try {
+            $this->todoService->deleteTodo($todo->id, auth()->id());
 
-        $todo->delete();
+            return redirect()->back()->with('success', 'Todo supprimé avec succès.');
+        } catch (NotFoundHttpException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la suppression du todo.');
+        }
+    }
 
-        return redirect()->back()->with('success', 'Todo supprimé.');
+    public function completed()
+    {
+        $todos = $this->todoService->getCompletedTodos(auth()->id());
+
+        return Inertia::render('Todos/Completed', [
+            'todos' => $todos,
+        ]);
+    }
+
+    public function pending()
+    {
+        $todos = $this->todoService->getPendingTodos(auth()->id());
+
+        return Inertia::render('Todos/Pending', [
+            'todos' => $todos,
+        ]);
     }
 }
