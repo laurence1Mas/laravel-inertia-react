@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d380db77c9088096810ebaa54d0435d",
+    "content-hash": "caa26d5711f4d4cbdd8bd0e0315f9471",
     "packages": [
         {
             "name": "brick/math",
@@ -1123,6 +1123,62 @@
                 }
             ],
             "time": "2023-10-27T10:59:02+00:00"
+        },
+        {
+            "name": "kakaprodo/custom-data",
+            "version": "v2.3.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kakaprodo/custom-data.git",
+                "reference": "efa1f0557110855f4146919570f4510b21b04923"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kakaprodo/custom-data/zipball/efa1f0557110855f4146919570f4510b21b04923",
+                "reference": "efa1f0557110855f4146919570f4510b21b04923",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": ">=7.0",
+                "php": ">=7.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Kakaprodo\\CustomData\\CustomDataServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kakaprodo\\CustomData\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "kakaprodo",
+                    "email": "promskakaprodo45@gmail.com"
+                }
+            ],
+            "description": "A Laravel package that wraps function arguments together into a single CustomData class allowing separate processing and validation for each argument.",
+            "keywords": [
+                "kakaprodo",
+                "laravel custom data",
+                "laravel data",
+                "laravel typescript",
+                "php",
+                "php typescript"
+            ],
+            "support": {
+                "issues": "https://github.com/kakaprodo/custom-data/issues",
+                "source": "https://github.com/kakaprodo/custom-data/tree/v2.3.5"
+            },
+            "time": "2025-04-29T08:40:24+00:00"
         },
         {
             "name": "laravel/framework",
