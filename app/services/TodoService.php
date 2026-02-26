@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Todo;
+use App\CustomData\Todo\CreateTodoData;
+use App\CustomData\Todo\UpdateTodoData;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,13 +24,13 @@ class TodoService
     /**
      * Crée un nouveau todo
      */
-    public function createTodo(int $userId, array $data): Todo
+    public function createTodo(int $userId, CreateTodoData $data): Todo
     {
         return DB::transaction(function () use ($userId, $data) {
             return Todo::create([
                 'user_id' => $userId,
-                'title' => $data['title'],
-                'description' => $data['description'] ?? null,
+                'title' => $data->title,
+                'description' => $data->description,
                 'completed' => false,
             ]);
         });
@@ -37,15 +39,16 @@ class TodoService
     /**
      * Met à jour un todo existant
      */
-    public function updateTodo(int $todoId, int $userId, array $data): Todo
-    {
+    public function updateTodo( int $todoId, int $userId, UpdateTodoData $data): Todo {
+
         return DB::transaction(function () use ($todoId, $userId, $data) {
+
             $todo = $this->findTodoForUser($todoId, $userId);
 
             $todo->update([
-                'title' => $data['title'] ?? $todo->title,
-                'description' => $data['description'] ?? $todo->description,
-                'completed' => $data['completed'] ?? $todo->completed,
+                'title' => $data->title ?? $todo->title,
+                'description' => $data->description ?? $todo->description,
+                'completed' => $data->completed ?? $todo->completed,
             ]);
 
             return $todo->fresh();
@@ -66,19 +69,6 @@ class TodoService
     /**
      * Marque un todo comme complété
      */
-    public function markAsCompleted(int $todoId, int $userId): Todo
-    {
-        return $this->updateTodo($todoId, $userId, ['completed' => true]);
-    }
-
-    /**
-     * Marque un todo comme non complété
-     */
-    public function markAsPending(int $todoId, int $userId): Todo
-    {
-        return $this->updateTodo($todoId, $userId, ['completed' => false]);
-    }
-
     /**
      * Récupère les todos complétés d'un utilisateur
      */

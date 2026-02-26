@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateTodoRequest;
 use App\Services\TodoService;
 use Inertia\Inertia;
 use App\Models\Todo;
+use App\CustomData\Todo\CreateTodoData;
+use App\CustomData\Todo\UpdateTodoData;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TodoController extends Controller
@@ -36,13 +38,20 @@ class TodoController extends Controller
     public function store(StoreTodoRequest $request)
     {
         try {
-            $todo = $this->todoService->createTodo(
-                auth()->id(),
+            $data = CreateTodoData::make(
                 $request->validated()
             );
 
-            return redirect()->back()->with('success', 'Todo créé avec succès.');
+            $this->todoService->createTodo(
+                auth()->id(),
+                $data
+            );
+
+            return redirect()->back()
+                ->with('success', 'Todo créé avec succès.');
+
         } catch (\Exception $e) {
+
             return redirect()->back()
                 ->with('error', 'Erreur lors de la création du todo.')
                 ->withInput();
@@ -52,16 +61,27 @@ class TodoController extends Controller
     public function update(UpdateTodoRequest $request, Todo $todo)
     {
         try {
-            $this->todoService->updateTodo(
-                $todo->id,
-                auth()->id(),
+
+            $data = UpdateTodoData::make(
                 $request->validated()
             );
 
-            return redirect()->back()->with('success', 'Todo mis à jour avec succès.');
+            $this->todoService->updateTodo(
+                $todo->id,
+                auth()->id(),
+                $data
+            );
+
+            return redirect()->back()
+                ->with('success', 'Todo mis à jour avec succès.');
+
         } catch (NotFoundHttpException $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', $e->getMessage());
+
         } catch (\Exception $e) {
+
             return redirect()->back()
                 ->with('error', 'Erreur lors de la mise à jour du todo.');
         }
